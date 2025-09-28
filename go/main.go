@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -169,6 +170,7 @@ func getDouyinDownloadLink(shareText string) (map[string]string, error) {
 
 func main() {
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	r.POST("/api/v1/douyin", func(c *gin.Context) {
 		var req ShareLinkRequest

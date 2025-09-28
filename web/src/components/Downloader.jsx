@@ -19,10 +19,10 @@ function Downloader() {
         setResult(null);
 
         try {
-            const response = await fetch('http://localhost:8080/api/analyze', {
+                        const response = await fetch('http://localhost:8080/api/v1/douyin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: shareUrl }),
+                                body: JSON.stringify({ share_link: shareUrl }),
             });
 
             const data = await response.json();
@@ -31,7 +31,7 @@ function Downloader() {
                 throw new Error(data.message || `HTTP 错误! 状态: ${response.status}`);
             }
 
-            if (data.video_url) {
+                        if (data.download_url) {
                 setResult(data);
             } else {
                 throw new Error(data.message || '分析失败，未返回视频地址');
@@ -72,10 +72,9 @@ function Downloader() {
                 <div className="result-wrapper animate-fade-in">
                     <h2 className="video-title">{result.title}</h2>
                     <div className="video-container">
-                        <video src={result.video_url} controls className="video-player"></video>
+                        <video src={result.download_url} controls className="video-player"></video>
                     </div>
-                    {result.description && <p className="video-description">{result.description}</p>}
-                    <a href={result.video_url} download={getDownloadFilename()} className="download-link">
+                    <a href={result.download_url} download={getDownloadFilename()} className="download-link">
                         下载视频
                     </a>
                 </div>

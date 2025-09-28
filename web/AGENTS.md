@@ -36,20 +36,21 @@ The project is divided into three main parts:
 The API call logic is primarily located in `src/components/Downloader.jsx`.
 
 -   **Backend URL**: `http://localhost:8080`
--   **API Endpoint**: `/api/analyze`
+-   **API Endpoint**: `/api/v1/douyin`
 -   **Method**: `POST`
 -   **Request Body (JSON)**:
     ```json
     {
-      "url": "<douyin_share_link>"
+      "share_link": "<douyin_share_link>"
     }
     ```
 -   **Response Body (JSON)**:
     ```json
     {
+      "status": "success",
+      "video_id": "<video_id>",
       "title": "Video Title",
-      "description": "Video Description",
-      "video_url": "<direct_video_url>"
+      "download_url": "<direct_video_url>"
     }
     ```
 
