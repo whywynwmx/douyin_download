@@ -1,0 +1,149 @@
+.downloader-container {
+    width: 100%;
+    max-width: 700px;
+    background-color: var(--container-bg-color);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.input-wrapper {
+    display: flex;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.url-input {
+    flex-grow: 1;
+    border: 2px solid var(--border-color);
+    padding: 15px;
+    font-size: 1rem;
+    border-radius: 8px 0 0 8px;
+    transition: border-color 0.3s;
+}
+
+.url-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.analyze-button {
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 30px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 0 8px 8px 0;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.analyze-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.analyze-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: var(--error-color);
+    background-color: var(--error-bg-color);
+    border: 1px solid var(--error-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.result-wrapper {
+    margin-top: 30px;
+    text-align: left;
+}
+
+.video-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.video-container {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    background-color: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.video-player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.video-description {
+    font-size: 1rem;
+    color: var(--subtitle-color);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    margin-bottom: 25px;
+}
+
+.download-link {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.download-link:hover {
+    background-color: var(--primary-hover-color);
+}
+
+/* Animation */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .downloader-container {
+        padding: 20px;
+    }
+
+    .input-wrapper {
+        flex-direction: column;
+    }
+
+    .url-input,
+    .analyze-button {
+        border-radius: 8px;
+    }
+
+    .analyze-button {
+        margin-top: 10px;
+    }
+}
