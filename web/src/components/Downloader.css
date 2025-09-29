@@ -1,10 +1,16 @@
 .downloader-container {
     width: 100%;
     max-width: 700px;
-    background-color: var(--container-bg-color);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    background: var(--glass-bg-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow:
+        0 20px 40px var(--shadow-color),
+        0 0 0 1px var(--border-color);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .help-section {
@@ -62,10 +68,13 @@
 .url-input {
     flex-grow: 1;
     border: 2px solid var(--border-color);
-    padding: 15px;
+    padding: 16px 20px;
     font-size: 1rem;
-    border-radius: 8px 0 0 8px;
-    transition: border-color 0.3s;
+    border-radius: 12px 0 0 12px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .url-input:focus {
@@ -75,15 +84,33 @@
 
 .analyze-button {
     border: none;
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover-color) 100%);
     color: white;
-    padding: 15px 30px;
+    padding: 16px 35px;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    border-radius: 0 8px 8px 0;
-    transition: background-color 0.3s;
+    border-radius: 0 12px 12px 0;
+    transition: all 0.3s ease;
     white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.analyze-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.analyze-button:hover::before {
+    left: 100%;
 }
 
 .analyze-button:hover {
@@ -97,16 +124,27 @@
 
 .error-message {
     color: var(--error-color);
-    background-color: var(--error-bg-color);
+    background: var(--error-bg-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--error-color);
-    padding: 15px;
-    border-radius: 8px;
+    padding: 18px;
+    border-radius: 12px;
     margin-top: 20px;
+    font-weight: 500;
+    box-shadow: 0 8px 25px rgba(229, 62, 62, 0.15);
 }
 
 .result-wrapper {
     margin-top: 30px;
     text-align: left;
+    background: var(--glass-bg-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 15px 35px var(--shadow-color);
 }
 
 .video-title {
@@ -167,15 +205,38 @@
 .download-link {
     display: block;
     width: 100%;
-    padding: 15px;
-    background-color: var(--primary-color);
+    padding: 18px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover-color) 100%);
     color: white;
     text-align: center;
     text-decoration: none;
     font-size: 1.1rem;
-    font-weight: 500;
-    border-radius: 8px;
-    transition: background-color 0.3s;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.download-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.download-link:hover::before {
+    left: 100%;
+}
+
+.download-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
 }
 
 .download-link:hover {
