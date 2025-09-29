@@ -170,7 +170,14 @@ func getDouyinDownloadLink(shareText string) (map[string]string, error) {
 
 func main() {
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Range"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+		MaxAge:           86400,
+	}))
 
 	r.POST("/api/v1/douyin", func(c *gin.Context) {
 		var req ShareLinkRequest
@@ -194,6 +201,62 @@ func main() {
 			"title":        videoInfo["title"],
 			"download_url": videoInfo["url"],
 		})
+	})
+
+	// Video proxy endpoint to handle 403 issues
+	r.GET("/api/v1/douyin/proxy", func(c *gin.Context) {
+		videoURL := c.Query("url")
+		if videoURL == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing URL parameter"})
+			return
+		}
+
+		// Create request to the video URL with appropriate headers
+		req, err := http.NewRequest("GET", videoURL, nil)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
+			return
+		}
+
+		// Set headers to simulate mobile browser
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+		req.Header.Set("Referer", "https://www.douyin.com/")
+		req.Header.Set("Origin", "https://www.douyin.com")
+		req.Header.Set("Accept", "*/*")
+		req.Header.Set("Range", c.GetHeader("Range"))
+
+		// Make the request
+		client := &http.Client{CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// Allow redirects and copy headers
+			for k, v := range via[0].Header {
+				req.Header[k] = v
+			}
+			return nil
+		}}
+		resp, err := client.Do(req)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch video"})
+			return
+		}
+		defer resp.Body.Close()
+
+		// Set CORS headers
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Range")
+
+		// Copy essential headers from the response
+		c.Header("Content-Type", resp.Header.Get("Content-Type"))
+		c.Header("Content-Length", resp.Header.Get("Content-Length"))
+		c.Header("Accept-Ranges", resp.Header.Get("Accept-Ranges"))
+		c.Header("Content-Range", resp.Header.Get("Content-Range"))
+		c.Header("Cache-Control", "public, max-age=3600")
+
+		// Stream the video content
+		c.Status(resp.StatusCode)
+		io.Copy(c.Writer, resp.Body)
 	})
 
 	fmt.Println("Server is running on http://localhost:8080")
