@@ -64,6 +64,34 @@ function Downloader() {
                 </button>
             </div>
 
+            {!loading && !result && !error && (
+                <div className="help-section">
+                    <h3 className="help-title">💡 使用帮助</h3>
+                    <ul className="help-list">
+                        <li className="help-item">
+                            <span className="help-icon">1.</span>
+                            <span className="help-text">打开抖音App，找到想要下载的视频</span>
+                        </li>
+                        <li className="help-item">
+                            <span className="help-icon">2.</span>
+                            <span className="help-text">点击右下角的"分享"按钮</span>
+                        </li>
+                        <li className="help-item">
+                            <span className="help-icon">3.</span>
+                            <span className="help-text">选择"复制链接"，将链接粘贴到下方输入框</span>
+                        </li>
+                        <li className="help-item">
+                            <span className="help-icon">4.</span>
+                            <span className="help-text">点击"分析"按钮，等待解析完成</span>
+                        </li>
+                        <li className="help-item">
+                            <span className="help-icon">5.</span>
+                            <span className="help-text">点击"下载视频"保存高清无水印原视频</span>
+                        </li>
+                    </ul>
+                </div>
+            )}
+
             {loading && <Spinner />}
 
             {error && <div className="error-message">{error}</div>}
