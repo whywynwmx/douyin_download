@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 
@@ -179,6 +180,19 @@ func main() {
 		MaxAge:           86400,
 	}))
 
+	// 通用根路径，用于检查服务状态
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "running",
+			"service": "douyin-downloader",
+			"endpoints": []string{
+				"GET /",
+				"POST /api/v1/douyin",
+				"GET /api/v1/douyin/proxy",
+			},
+		})
+	})
+
 	r.POST("/api/v1/douyin", func(c *gin.Context) {
 		var req ShareLinkRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -259,8 +273,13 @@ func main() {
 		io.Copy(c.Writer, resp.Body)
 	})
 
-	fmt.Println("Server is running on http://localhost:8080")
-	if err := r.Run(":8080"); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Printf("Server is running on http://localhost:%s\n", port)
+	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }
