@@ -9,10 +9,8 @@ on:
   workflow_dispatch:
 
 env:
-  # 使用 github.io 作为仓库名前缀，如果没有 Docker Hub 的话
   IMAGE_NAME: douyin-downloader
   REGISTRY: ghcr.io
-  IMAGE_TAG: ${{ github.ref_name }}
 
 jobs:
   build:
@@ -24,6 +22,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: Log in to the Container registry
       if: github.event_name != 'pull_request'
@@ -54,5 +55,3 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: linux/amd64,linux/arm64
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
