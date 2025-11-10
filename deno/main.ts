@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-import { cors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
 // 模拟移动浏览器的请求头
 const headers = {
@@ -121,28 +120,49 @@ async function getDouyinDownloadLink(shareText: string): Promise<VideoInfo> {
   };
 }
 
-// CORS配置
-const corsHandler = cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Origin", "Content-Type", "Accept", "Range"],
-  exposedHeaders: ["Content-Length"],
-  credentials: false,
-  maxAge: 86400,
-});
+// CORS处理函数
+function addCorsHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set("Access-Control-Allow-Origin", "*");
+  headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  headers.set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Range");
+  headers.set("Access-Control-Expose-Headers", "Content-Length");
+  headers.set("Access-Control-Max-Age", "86400");
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+// 处理OPTIONS预检请求
+function handleOptions(): Response {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Origin, Content-Type, Accept, Range",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+}
 
 // 请求处理器
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
+  // 处理OPTIONS预检请求
+  if (req.method === "OPTIONS") {
+    return handleOptions();
+  }
+
   try {
-    // 应用CORS
-    const corsResponse = await corsHandler(req);
-    if (corsResponse) return corsResponse;
 
     // 根路径 - 服务状态检查
     if (url.pathname === "/") {
-      return new Response(JSON.stringify({
+      const response = new Response(JSON.stringify({
         status: "running",
         service: "douyin-downloader",
         version: "deno-deploy",
@@ -154,6 +174,7 @@ async function handler(req: Request): Promise<Response> {
       }), {
         headers: { "Content-Type": "application/json" },
       });
+      return addCorsHeaders(response);
     }
 
     // 获取视频下载链接的API
@@ -162,18 +183,19 @@ async function handler(req: Request): Promise<Response> {
         const body: ShareLinkRequest = await req.json();
 
         if (!body.share_link) {
-          return new Response(JSON.stringify({
+          const response = new Response(JSON.stringify({
             status: "error",
             error: "缺少 share_link 参数",
           }), {
             status: 400,
             headers: { "Content-Type": "application/json" },
           });
+          return addCorsHeaders(response);
         }
 
         const videoInfo = await getDouyinDownloadLink(body.share_link);
 
-        return new Response(JSON.stringify({
+        const response = new Response(JSON.stringify({
           status: "success",
           video_id: videoInfo.video_id,
           title: videoInfo.title,
@@ -181,15 +203,17 @@ async function handler(req: Request): Promise<Response> {
         }), {
           headers: { "Content-Type": "application/json" },
         });
+        return addCorsHeaders(response);
 
       } catch (error) {
-        return new Response(JSON.stringify({
+        const response = new Response(JSON.stringify({
           status: "error",
           error: error.message,
         }), {
           status: 500,
           headers: { "Content-Type": "application/json" },
         });
+        return addCorsHeaders(response);
       }
     }
 
@@ -198,12 +222,13 @@ async function handler(req: Request): Promise<Response> {
       const videoURL = url.searchParams.get("url");
 
       if (!videoURL) {
-        return new Response(JSON.stringify({
+        const response = new Response(JSON.stringify({
           error: "缺少URL参数",
         }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });
+        return addCorsHeaders(response);
       }
 
       try {
@@ -223,7 +248,7 @@ async function handler(req: Request): Promise<Response> {
 
         const videoData = await videoResponse.arrayBuffer();
 
-        return new Response(videoData, {
+        const videoResponseObj = new Response(videoData, {
           status: videoResponse.status,
           headers: {
             "Content-Type": videoResponse.headers.get("Content-Type") || "video/mp4",
@@ -231,24 +256,23 @@ async function handler(req: Request): Promise<Response> {
             "Accept-Ranges": videoResponse.headers.get("Accept-Ranges") || "",
             "Content-Range": videoResponse.headers.get("Content-Range") || "",
             "Cache-Control": "public, max-age=3600",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-            "Access-Control-Allow-Headers": "Range",
           },
         });
+        return addCorsHeaders(videoResponseObj);
 
       } catch (error) {
-        return new Response(JSON.stringify({
+        const response = new Response(JSON.stringify({
           error: error.message,
         }), {
           status: 500,
           headers: { "Content-Type": "application/json" },
         });
+        return addCorsHeaders(response);
       }
     }
 
     // 404 - 未找到路径
-    return new Response(JSON.stringify({
+    const notFoundResponse = new Response(JSON.stringify({
       error: "未找到请求的路径",
       available_endpoints: [
         "GET /",
@@ -259,24 +283,28 @@ async function handler(req: Request): Promise<Response> {
       status: 404,
       headers: { "Content-Type": "application/json" },
     });
+    return addCorsHeaders(notFoundResponse);
 
   } catch (error) {
-    return new Response(JSON.stringify({
+    const errorResponse = new Response(JSON.stringify({
       status: "error",
       error: `服务器内部错误: ${error.message}`,
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
+    return addCorsHeaders(errorResponse);
   }
 }
 
 // 启动服务器
-console.log("🚀 抖音下载服务启动中...");
-console.log("📡 服务运行在 Deno Deploy");
-console.log("🌐 API端点:");
-console.log("  GET  /                    - 服务状态");
-console.log("  POST /api/v1/douyin       - 获取下载链接");
-console.log("  GET  /api/v1/douyin/proxy - 视频代理");
+const port = Number(Deno.env.get("PORT")) || 8080;
 
-serve(handler);
+console.log("🚀 抖音下载服务启动中...");
+console.log(`📡 服务运行在 http://localhost:${port}`);
+console.log("🌐 API端点:");
+console.log(`  GET  http://localhost:${port}/                    - 服务状态`);
+console.log(`  POST http://localhost:${port}/api/v1/douyin       - 获取下载链接`);
+console.log(`  GET  http://localhost:${port}/api/v1/douyin/proxy - 视频代理`);
+
+serve(handler, { port });
