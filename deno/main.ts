@@ -298,13 +298,11 @@ async function handler(req: Request): Promise<Response> {
 }
 
 // 启动服务器
-const port = Number(Deno.env.get("PORT")) || 8080;
+// console.log("🚀 抖音下载服务启动中...");
+// console.log(`📡 服务运行在 http://localhost:${port}`);
+// console.log("🌐 API端点:");
+// console.log(`  GET  http://localhost:${port}/                    - 服务状态`);
+// console.log(`  POST http://localhost:${port}/api/v1/douyin       - 获取下载链接`);
+// console.log(`  GET  http://localhost:${port}/api/v1/douyin/proxy - 视频代理`);
 
-console.log("🚀 抖音下载服务启动中...");
-console.log(`📡 服务运行在 http://localhost:${port}`);
-console.log("🌐 API端点:");
-console.log(`  GET  http://localhost:${port}/                    - 服务状态`);
-console.log(`  POST http://localhost:${port}/api/v1/douyin       - 获取下载链接`);
-console.log(`  GET  http://localhost:${port}/api/v1/douyin/proxy - 视频代理`);
-
-serve(handler, { port });
+serve(handler);
