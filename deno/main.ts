@@ -1,4 +1,4 @@
-// 移除：import { serve } from "https://deno.land/std@0.208.0/http/server.ts"; 
+// 🚀 注意：已移除 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 
 // 模拟移动浏览器的请求头
 const headers = {
@@ -120,7 +120,7 @@ async function getDouyinDownloadLink(shareText: string): Promise<VideoInfo> {
   };
 }
 
-// CORS处理函数
+// 通用的 CORS 处理函数 (用于非代理响应)
 function addCorsHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", "*");
@@ -165,7 +165,7 @@ async function handler(req: Request): Promise<Response> {
       const response = new Response(JSON.stringify({
         status: "running",
         service: "douyin-downloader",
-        version: "deno-deploy",
+        version: "deno-deploy-v2", // 版本号更新，便于追踪
         endpoints: [
           "GET /",
           "POST /api/v1/douyin",
@@ -217,7 +217,7 @@ async function handler(req: Request): Promise<Response> {
       }
     }
 
-    // 视频代理端点
+    // 视频代理端点 (已优化为 Stream 转发)
     if (url.pathname === "/api/v1/douyin/proxy" && req.method === "GET") {
       const videoURL = url.searchParams.get("url");
 
@@ -235,34 +235,53 @@ async function handler(req: Request): Promise<Response> {
         const videoResponse = await fetch(videoURL, {
           headers: {
             ...headers,
+            // 确保 Referer 和 Origin 正确模拟以绕过部分抖音限制
             "Referer": "https://www.douyin.com/",
             "Origin": "https://www.douyin.com",
             "Accept": "*/*",
+            // 转发 Range Header 以支持视频流拖拽
             "Range": req.headers.get("Range") || "",
           },
         });
 
-        if (!videoResponse.ok) {
-          throw new Error(`视频获取失败: ${videoResponse.status}`);
+        if (!videoResponse.ok || !videoResponse.body) {
+          // 如果视频服务器拒绝连接或返回非 2xx 状态，抛出错误
+          throw new Error(`视频获取失败: ${videoResponse.status} ${videoResponse.statusText}`);
         }
 
-        const videoData = await videoResponse.arrayBuffer();
+        // 🚀 核心优化：使用 videoResponse.body (ReadableStream)
+        const responseHeaders = new Headers(videoResponse.headers);
+        
+        // 转发所有关键响应头，并添加 CORS 支持
+        responseHeaders.set("Content-Type", videoResponse.headers.get("Content-Type") || "video/mp4");
+        // Content-Length 必须转发
+        if (videoResponse.headers.get("Content-Length")) {
+          responseHeaders.set("Content-Length", videoResponse.headers.get("Content-Length")!);
+        }
+        // Range 相关的头必须转发，以支持流式传输
+        responseHeaders.set("Accept-Ranges", videoResponse.headers.get("Accept-Ranges") || "bytes");
+        if (videoResponse.headers.get("Content-Range")) {
+          responseHeaders.set("Content-Range", videoResponse.headers.get("Content-Range")!);
+        }
+        responseHeaders.set("Cache-Control", "public, max-age=3600");
 
-        const videoResponseObj = new Response(videoData, {
-          status: videoResponse.status,
-          headers: {
-            "Content-Type": videoResponse.headers.get("Content-Type") || "video/mp4",
-            "Content-Length": videoResponse.headers.get("Content-Length") || "",
-            "Accept-Ranges": videoResponse.headers.get("Accept-Ranges") || "",
-            "Content-Range": videoResponse.headers.get("Content-Range") || "",
-            "Cache-Control": "public, max-age=3600",
-          },
+        // 代理响应的 CORS 头
+        responseHeaders.set("Access-Control-Allow-Origin", "*");
+        responseHeaders.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+        responseHeaders.set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Range");
+        responseHeaders.set("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges");
+
+
+        // 直接返回 Stream，避免内存溢出
+        return new Response(videoResponse.body, {
+            status: videoResponse.status,
+            statusText: videoResponse.statusText,
+            headers: responseHeaders,
         });
-        return addCorsHeaders(videoResponseObj);
 
       } catch (error) {
         const response = new Response(JSON.stringify({
-          error: error.message,
+          error: `代理请求失败或超时: ${error.message}`,
         }), {
           status: 500,
           headers: { "Content-Type": "application/json" },
@@ -297,7 +316,5 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-// 🚀 最终的启动逻辑 (Deno Deploy 兼容) 🚀
-// 必须使用 Deno.serve() 且不能有任何端口参数。
-
+// 🚀 最终的启动逻辑：使用 Deno.serve()，Deno Deploy 自动接管 HTTP 端口。
 Deno.serve(handler);
