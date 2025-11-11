@@ -1,1 +1,4 @@
 log.txt
+/cloudflare/node_modules
+/cloudflare/.wrangler
+/node_modules

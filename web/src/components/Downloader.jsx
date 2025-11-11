@@ -115,7 +115,7 @@ function Downloader() {
                             </p>
                         </video>
                     </div>
-                    <a href={proxyUrl} download={getDownloadFilename()} className="download-link">
+                    <a href={result.download_url} download={getDownloadFilename()} className="download-link" target="_blank" rel="noopener noreferrer">
                         下载视频
                     </a>
                 </div>

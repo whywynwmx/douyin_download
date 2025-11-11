@@ -13,6 +13,7 @@ function App() {
         <Downloader />
       </main>
       <footer>
+        <p>&copy; 2024 dy.likewind.xyz. All rights reserved.</p>
       </footer>
     </div>
   );
