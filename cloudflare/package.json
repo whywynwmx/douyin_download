@@ -1,0 +1,16 @@
+{
+  "name": "douyin-downloader-cf",
+  "version": "1.0.0",
+  "description": "抖音下载服务 - Cloudflare Workers版本",
+  "main": "worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "keywords": ["douyin", "downloader", "cloudflare", "workers"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+name = "douyin-downloader"
+main = "worker.js"
+compatibility_date = "2024-01-15"
+
+[vars]
+# 环境变量可以在这里定义
+
+# 生产环境配置
+[env.production]
+name = "douyin-downloader"
+
+# 开发环境配置
+[env.development]
+name = "douyin-downloader-dev"
